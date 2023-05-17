@@ -8,6 +8,8 @@ const connectDB = require('./cofig/connectDB')
 const app = express();
 const userRoute = require('./Routes/userRoute')
 const errorHandler = require('./middleware/errorMiddleware')
+const cookieParser = require('cookie-parser')
+
 
 
 
@@ -19,8 +21,10 @@ app.get('/', (req,res) =>{
     
 //middlewares
 app.use(express.json())
+app.use(cookieParser())
 app.use(express.urlencoded({extended:false}))
 app.use(bodyParser.json())
+
 
 const PORT =  5000;
 
