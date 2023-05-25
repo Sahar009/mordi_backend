@@ -59,7 +59,7 @@ const registerUser = async_handler( async(req,res) =>{
     //get user back
     if (user){
         res.status(201).json({
-            _id:user.id,
+            _id:user._id,
             name:user.name,
             email:user.email,
             photo:user.photo,
@@ -87,7 +87,7 @@ const registerUser = async_handler( async(req,res) =>{
         }
         // check if email exist 
         const user = await User.findOne({email})
-
+       
         if (!user){
             res.status(400);
             throw new Error('User not found  plesae sign up');
@@ -95,19 +95,22 @@ const registerUser = async_handler( async(req,res) =>{
         //user exists , check if password is correct 
         const passwordIsCorrect = await bcrypt.compare(password,user.password)
         //send HTTP ONL COOKIE
-        const token = generateToken(user._id)
-        if(passwordIsCorrect){
-         res.cookie('token', token, {
-        path:'/',
-        httpOnly:true,
-        expires:new Date(Date.now() + 1000 * 86400), //1 day
-        sameSite:'none',
-        secure:true
+        const token = generateToken(user._id);
 
-    })}
+        if(passwordIsCorrect){
+            res.cookie('token', token, {
+                path:'/',
+                httpOnly:true,
+                expires:new Date(Date.now() + 1000 * 86400), //1 day
+                sameSite:'none',
+                secure:true
+        
+            })
+        }
         if (user && passwordIsCorrect){
+           
             res.status(200).json({
-                _id:user.id,
+                _id:user._id,
                 name:user.name,
                 email:user.email,
                 photo:user.photo,
@@ -143,7 +146,7 @@ const getUser = async_handler(async(req,res) =>{
 const user = await User.findById(req.user._id)
 if (user){
     res.status(200).json({
-        _id:user.id,
+        _id:user._id,
         name:user.name,
         email:user.email,
         photo:user.photo,
@@ -179,13 +182,75 @@ if(!token){
 )
 
 
+// Update user
+const UpdateUser = async_handler( async(req,res)=>{
+const user = await User.findById(req.user._id)
+
+if(user){
+    const {name , email, photo, phone, bio} = user;
+    user.email = email;
+    user.name = req.body.name || name;
+    user.photo = req.body.photo || photo;
+    user.phone = req.body.phone || phone;
+    user.bio = req.body.bio || bio;
+
+const updatedUser = await user.save()
+res.status(200).json({
+    _id:updatedUser._id,
+    name:updatedUser.name,
+    email:updatedUser.email,
+    photo:updatedUser.photo,
+    phone:updatedUser.phone,
+    bio:updatedUser.bio,
+})
+}
+else{
+    res.status(404)
+    throw new Error("User not found")
+}
+})
+
+const ChangePassword = async_handler(async(req,res) =>{
+    const user = await User.findById(req.user._id);
 
 
+    const {oldPassword, password} = req.body
+
+
+    if(!user){
+        res.status(400);
+        throw new Error('User Not Found, sign up');
+    }
+// validation
+    if(!oldPassword || !password){
+res.status(400);
+throw new Error('please add old and new password ');
+    }
+
+    //check  if old password matches passwordin DB
+
+    const passwordIsCorrect = await bcrypt.compare(oldPassword, user.password)
+
+
+    // Sava new password 
+    if (user && passwordIsCorrect){
+        user.password = password
+        await user.save()
+        res.status(200).send('password change successful')
+    }else{
+        res.status(404);
+        throw new Error('Old passwword is incorrect ');
+    }
+
+
+})
 
 module.exports ={
     registerUser,
     loginUser,
     logOutUser,
     getUser,
-    loggedInStatus
+    loggedInStatus,
+    UpdateUser,
+    ChangePassword
 }

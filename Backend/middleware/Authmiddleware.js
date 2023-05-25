@@ -11,6 +11,7 @@ const protect = asyncy_handler(async(req,res,next) =>{
         }
         //verify token
         const verified = jwt.verify(token, process.env.JWT_SECRET)
+        
         // Get user ID from token
        const user = await User.findById(verified.id).select('-password')
 
@@ -19,8 +20,11 @@ const protect = asyncy_handler(async(req,res,next) =>{
             throw new Error('user not found')
         }
         // if user is found save user to the request 
-        req.user = user
-        next()
+      
+            req.user = user
+       
+        
+       next()
     } catch (error) {
         res.status(401)
         throw new Error('Not Authorized pleas login')

@@ -24,8 +24,10 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(express.urlencoded({extended:false}))
 app.use(bodyParser.json())
-
-
+app.use(cors({
+    origin: ['http://localhost:3001'],
+    credentials:true
+}))
 const PORT =  5000;
 
 //Routes middleware
