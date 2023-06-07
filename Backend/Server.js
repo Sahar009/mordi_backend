@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const connectDB = require('./cofig/connectDB')
 const app = express();
 const userRoute = require('./Routes/userRoute')
+const studentRoute = require('./Routes/studentRoute')
 const errorHandler = require('./middleware/errorMiddleware')
 const cookieParser = require('cookie-parser')
 
@@ -32,6 +33,7 @@ const PORT =  5000;
 
 //Routes middleware
 app.use('/api/users', userRoute)
+app.use('/api/students', studentRoute)
 
 // error handler
 app.use(errorHandler)

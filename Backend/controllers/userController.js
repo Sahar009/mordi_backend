@@ -2,7 +2,8 @@ const async_handler =require('express-async-handler')
 const User = require('../models/userModel')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const Token = require('../models/tokenModel')
+const crypto = require('crypto')
 
 //functtion to generate a token with user id
 const generateToken = (id) =>{
@@ -27,7 +28,7 @@ const registerUser = async_handler( async(req,res) =>{
     const user_exist = await User.findOne({email})
     if(user_exist){
         res.status(404)
-        throw new Error('Emial has already been registered')
+        throw new Error('Email has already been registered')
     }
     
 // Encrypt password
@@ -58,15 +59,15 @@ const registerUser = async_handler( async(req,res) =>{
     })
     //get user back
     if (user){
+        const { _id, name, email, photo, phone, bio } = user;
         res.status(201).json({
-            _id:user._id,
-            name:user.name,
-            email:user.email,
-            photo:user.photo,
-            phone:user.phone,
-            bio:user.bio,
-            password:user.password,
-            token
+            _id,
+            name,
+            email,
+            photo,
+            phone,
+            bio,
+            token,
 
         })
     }else{
@@ -108,16 +109,16 @@ const registerUser = async_handler( async(req,res) =>{
             })
         }
         if (user && passwordIsCorrect){
-           
+            const { _id, name, email, photo, phone, bio,password } = user;
             res.status(200).json({
-                _id:user._id,
-                name:user.name,
-                email:user.email,
-                photo:user.photo,
-                phone:user.phone,
-                bio:user.bio,
-                password:user.password,
-                token
+                _id,
+                name,
+                email,
+                photo,
+                phone,
+                bio,
+                password,
+                token,
             });
 
         }else{
@@ -145,14 +146,16 @@ const registerUser = async_handler( async(req,res) =>{
 const getUser = async_handler(async(req,res) =>{
 const user = await User.findById(req.user._id)
 if (user){
-    res.status(200).json({
-        _id:user._id,
-        name:user.name,
-        email:user.email,
-        photo:user.photo,
-        phone:user.phone,
-        bio:user.bio,
-        password:user.password,
+    const { _id, name, email, photo, phone, bio,password } = user;
+    res.status(200).json(
+        {
+            _id,
+            name,
+            email,
+            photo,
+            phone,
+            bio,
+        password
         
     });
 
@@ -244,6 +247,89 @@ throw new Error('please add old and new password ');
 
 
 })
+const forgotpassword =async_handler(async(req,res)=>{
+    const {email} = req.body
+    const user = await User.findOne({email})
+    if(!user){
+        res.status(404)
+        throw new Error('User does not exist')
+    }
+// create reset token
+let resetToken = crypto.randomBytes(32).toString('hex') + user._id
+console.log(resetToken)
+
+// hash token b4 saving to DB
+const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex')
+// console.log(hashedToken)
+
+
+///save token to DB
+
+await new Token({
+userId:user._id,
+token:hashedToken,
+createdAt:Date.now(),
+expiresAt:Date.now()+30 *(60*1000) //30minutes
+}).save()
+
+//construction of reset URL
+const resetURL = `${process.env.CLIENT_URL}/resetpassword/ ${resetToken}`
+//frontend url = process.env.CLIENT_URL
+
+//reset email construct
+const message =`
+<h2>Hello ${user.name}</h2>
+<p>Please use the URL below to reset your password</p>
+<p>The reset link is only valid for 29 minutes</P>
+
+<a href=${resetURL} clicktracking=off>${resetURL}</a>
+<p>Regards...</p>
+<p>Sahar009</p>`
+
+const subject = "Password Reset Request";
+const send_to = user.email;
+const sent_from = process.env.EMAIL_USER;
+
+try {
+  await sendEmail(subject, message, send_to, sent_from);
+  res.status(200).json({ success: true, message: "Reset Email Sent" });
+} catch (error) {
+  res.status(500);
+  throw new Error("Email not sent, please try again some other time");
+}
+
+
+}) ;
+//Reset password
+const resetPassword = async_handler(async (req, res,next) => {
+    const { password } = req.body;
+    const { resetToken } = req.params;
+  
+    // Hash token, then compare to Token in DB
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+  
+    // fIND TOKEN in DB
+    const userToken = await Token.findOne({
+      token: hashedToken,
+      expiresAt: { $gt: Date.now() },
+    });
+  
+    if (!userToken) {
+      res.status(404);
+      throw new Error("Invalid or Expired Token");
+    }
+  
+    // Find user
+    const user = await User.findOne({ _id: userToken.userId });
+    user.password = password;
+    await user.save();
+    res.status(200).json({
+      message: "Password Reset Successful, Please Login",
+    });
+  });
 
 module.exports ={
     registerUser,
@@ -252,5 +338,7 @@ module.exports ={
     getUser,
     loggedInStatus,
     UpdateUser,
-    ChangePassword
+    ChangePassword,
+    forgotpassword,
+    resetPassword,
 }
