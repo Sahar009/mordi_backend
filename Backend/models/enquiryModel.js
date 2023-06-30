@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const studentSchema = mongoose.Schema({
+const enquirySchema = mongoose.Schema({
 user :{
     type:mongoose.Schema.Types.ObjectId,
     required: true,
@@ -9,7 +9,7 @@ user :{
 email:{
     type:String,
     required:[true, 'please add a stuent mail'],
-    unique: true,
+
     trim:true,
     match:[
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
@@ -25,36 +25,25 @@ phone:{
     type:String,
     default:"234"
 },
+location:{
+    type:String,
+    required:[true,'please add a location'],
+},
 course: {
     type:String,
     required:[true,'please add a course'],
     trim:true
 },
-paid: {
-    type:String,
-    required:[true,'please add a paid amount'],
-    default:'PAID',
-    trim:true
-},
-// price: {
-//     type:String,
-//     required:[true,'please add a payment'],
-//     default:'PRICE',
-//     trim:true
-// },
+
 description: {
     type:String,
     required:[true,'please add a description'],
     trim:true
 },
-image: {
-    type:Object,
-   default:{}
-}
 
 },{
     timestamps:true
 })
 
-const Student = mongoose.model('Student', studentSchema)
-module.exports = Student 
+const Enquiry = mongoose.model('Enquiry', enquirySchema)
+module.exports = Enquiry

@@ -8,6 +8,7 @@ const connectDB = require('./cofig/connectDB')
 const app = express();
 const userRoute = require('./Routes/userRoute')
 const studentRoute = require('./Routes/studentRoute')
+const enquiryRoute = require('./Routes/enquiryRoute')
 const errorHandler = require('./middleware/errorMiddleware')
 const cookieParser = require('cookie-parser')
 
@@ -26,7 +27,7 @@ app.use(cookieParser())
 app.use(express.urlencoded({extended:false}))
 app.use(bodyParser.json())
 app.use(cors({
-    origin: ['http://localhost:3001'],
+    origin: ['http://localhost:3000'],
     credentials:true
 }))
 const PORT =  5000;
@@ -34,6 +35,7 @@ const PORT =  5000;
 //Routes middleware
 app.use('/api/users', userRoute)
 app.use('/api/students', studentRoute)
+app.use('/api/enquiry', enquiryRoute)
 
 // error handler
 app.use(errorHandler)

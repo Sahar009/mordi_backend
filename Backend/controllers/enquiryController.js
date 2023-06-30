@@ -1,39 +1,39 @@
 const async_handler = require("express-async-handler");
-const Student = require("../models/studentModel");
+const Enquiry = require("../models/enquiryModel");
 
-const createStudent = async_handler(async(req,res)=>{
-const {name, paid,course, description, email, phone} =req.body
+const createEnquiry = async_handler(async(req,res)=>{
+const {name,course, description,location, email, phone} =req.body
 
 // validation 
-if(!name || !paid ||!course|| !email ){
+if(!name ||!course|| !email || !location ){
     res.status(400)
     throw new Error('please fill in all fields ')
 }
 // upload image 
 // create student
-const student = await Student.create({
+const student = await Enquiry.create({
     user: req.user.id,
     name,
     course,
     email,
     phone,
-    paid,
     description,
+    location,
     
 })
 res.status(201).json(student)
 })
 
 // get all  students 
-const getStudents = async_handler(async(req,res) =>{
-const students = await Student.find({user:req.user.id}).sort('-createdAt')
+const getEnquirys = async_handler(async(req,res) =>{
+const students = await Enquiry.find({user:req.user.id}).sort('-createdAt')
 // user:req.user.id
 res.status(200).json(students)
 })
 
 // Get single student
-const getStudent = async_handler(async (req, res) => {
-    const student = await Student.findById(req.params.id);
+const getEnquiry = async_handler(async (req, res) => {
+    const student = await Enquiry.findById(req.params.id);
     // if Student doesnt exist
     if (!student) {
       res.status(404);
@@ -49,8 +49,8 @@ const getStudent = async_handler(async (req, res) => {
 
 
   // Delete Student
-const deleteStudent = async_handler(async (req, res) => {
-    const student = await Student.findById(req.params.id);
+const deleteEnquiry = async_handler(async (req, res) => {
+    const student = await Enquiry.findById(req.params.id);
     // if Student doesnt exist
     if (!student) {
       res.status(404);
@@ -68,9 +68,9 @@ const deleteStudent = async_handler(async (req, res) => {
 
 
 module.exports ={
-    createStudent,
-    getStudents,
-    getStudent,
-    deleteStudent
+    createEnquiry,
+    getEnquirys,
+    getEnquiry,
+    deleteEnquiry
     
 }
