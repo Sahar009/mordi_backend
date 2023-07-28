@@ -3,7 +3,9 @@ const User = require('../models/userModel')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Token = require('../models/tokenModel')
-const crypto = require('crypto')
+const crypto = require('crypto');
+const sendMail = require('../utility/sendMail');
+
 
 //functtion to generate a token with user id
 const generateToken = (id) =>{
@@ -12,7 +14,7 @@ const generateToken = (id) =>{
 
 
 const registerUser = async_handler( async(req,res) =>{
-    const {name,email, password} = req.body
+    const {name,email, password} = req
     //or req.body.email
 
     //validation
@@ -254,9 +256,14 @@ const forgotpassword =async_handler(async(req,res)=>{
         res.status(404)
         throw new Error('User does not exist')
     }
+    //delete token if token exist
+    let token = await Token.findOne({userId: user._id})
+    if(token){
+        await token.deleteOne()
+    }
 // create reset token
 let resetToken = crypto.randomBytes(32).toString('hex') + user._id
-console.log(resetToken)
+// console.log(resetToken)
 
 // hash token b4 saving to DB
 const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex')
@@ -290,8 +297,10 @@ const subject = "Password Reset Request";
 const send_to = user.email;
 const sent_from = process.env.EMAIL_USER;
 
+// await sendMail(subject, message, send_to, sent_from);
+// res.status(200).json({ success: true, message: "Reset Email Sent" });
 try {
-  await sendEmail(subject, message, send_to, sent_from);
+  await sendMail(subject, message, send_to, sent_from);
   res.status(200).json({ success: true, message: "Reset Email Sent" });
 } catch (error) {
   res.status(500);

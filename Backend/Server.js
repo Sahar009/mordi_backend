@@ -9,10 +9,11 @@ const app = express();
 const userRoute = require('./Routes/userRoute')
 const studentRoute = require('./Routes/studentRoute')
 const enquiryRoute = require('./Routes/enquiryRoute')
+const contactRoute = require('./Routes/contactRoute')
 const errorHandler = require('./middleware/errorMiddleware')
 const cookieParser = require('cookie-parser')
 
-
+const path =require('path')
 
 
 //Routes
@@ -21,21 +22,24 @@ app.get('/', (req,res) =>{
     });
 
     
-//middlewares
+//middlewaress
 app.use(express.json())
 app.use(cookieParser())
 app.use(express.urlencoded({extended:false}))
 app.use(bodyParser.json())
 app.use(cors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3001'],
     credentials:true
 }))
-const PORT =  5000;
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+const PORT =  5000
 
 //Routes middleware
 app.use('/api/users', userRoute)
 app.use('/api/students', studentRoute)
 app.use('/api/enquiry', enquiryRoute)
+app.use('/api/contactus', contactRoute)
 
 // error handler
 app.use(errorHandler)

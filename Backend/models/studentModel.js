@@ -36,12 +36,12 @@ paid: {
     default:'PAID',
     trim:true
 },
-// price: {
-//     type:String,
-//     required:[true,'please add a payment'],
-//     default:'PRICE',
-//     trim:true
-// },
+price: {
+    type:String,
+    required:[true,'please add a payment'],
+    default:'PRICE',
+    trim:true
+},
 description: {
     type:String,
     required:[true,'please add a description'],
