@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "cloudinary": "^1.37.3",
-    "cookie-parser": "^1.4.6",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.4.1"
-  }
-}
